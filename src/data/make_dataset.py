@@ -1,7 +1,7 @@
 import pandas as pd
 from glob import glob
 
-
+"""
 # Read single CSV file
 acc_data = pd.read_csv(
     "../../data/raw/MetaMotion/A-bench-heavy2-rpe8_MetaWear_2019-01-11T16.10.08.270_C42732BE255C_Accelerometer_12.500Hz_1.4.4.csv"
@@ -69,7 +69,7 @@ gyro_df.index = pd.to_datetime(gyro_df["epoch (ms)"], unit="ms")
 
 acc_df = acc_df.drop(["epoch (ms)", "time (01:00)", "elapsed (s)"], axis=1)
 gyro_df = gyro_df.drop(["epoch (ms)", "time (01:00)", "elapsed (s)"], axis=1)
-
+"""
 
 # Turn into function
 files = glob("../../data/raw/MetaMotion/*.csv")
@@ -146,7 +146,7 @@ sampling = {
     "set": "last",
 }
 
-data_merged[:1000].resample(rule="200ms").apply(sampling)
+# data_merged[:1000].resample(rule="200ms").apply(sampling)
 
 days = [g for n, g in data_merged.groupby(pd.Grouper(freq="D"))]
 data_resampled = pd.concat(
@@ -154,7 +154,7 @@ data_resampled = pd.concat(
 )
 
 data_resampled["set"] = data_resampled["set"].astype("int64")
-data_resampled.info()
+# data_resampled.info()
 
 
 # Export dataset
