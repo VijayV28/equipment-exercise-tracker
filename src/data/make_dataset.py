@@ -146,7 +146,7 @@ sampling = {
     "set": "last",
 }
 
-# data_merged[:1000].resample(rule="200ms").apply(sampling)
+data_merged[:1000].resample(rule="200ms").apply(sampling)
 
 days = [g for n, g in data_merged.groupby(pd.Grouper(freq="D"))]
 data_resampled = pd.concat(
@@ -154,7 +154,7 @@ data_resampled = pd.concat(
 )
 
 data_resampled["set"] = data_resampled["set"].astype("int64")
-# data_resampled.info()
+data_resampled.info()
 
 
 # Export dataset
