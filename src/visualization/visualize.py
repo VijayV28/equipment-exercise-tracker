@@ -27,17 +27,27 @@ for label in df["label"].unique():
 
 # Adjust plot settings
 mpl.style.use("seaborn-v0_8-talk")
-mpl.rcParams["figure.figsize"] = (20, 4)
+mpl.rcParams["figure.figsize"] = (20, 5)
 mpl.rcParams["figure.dpi"] = 100
 
 # Compare medium vs. heavy sets
-
+category_df = df.query("participant == 'A'").query("label == 'squat'").reset_index()
+fig, ax = plt.subplots()
+category_df.groupby(["category"])["acc_y"].plot()
+ax.legend()
+ax.set_xlabel("Samples")
+ax.set_ylabel("acc_y")
 
 # Compare participants
-
+participant_df = df.query("label == 'row'").sort_values("participant").reset_index()
+fig, ax = plt.subplots()
+participant_df.groupby(["participant"])["acc_y"].plot()
+ax.legend()
+ax.set_xlabel("Samples")
+ax.set_ylabel("acc_y")
 
 # Plot multiple axis
-
+df["label"].unique()
 
 # Create a loop to plot all combinations per sensor
 
