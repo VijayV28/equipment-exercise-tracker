@@ -47,7 +47,16 @@ ax.set_xlabel("Samples")
 ax.set_ylabel("acc_y")
 
 # Plot multiple axis
-df["label"].unique()
+label = "dead"
+participant = "A"
+all_axis_df = df.query(f"participant == '{participant}'").query(f"label == '{label}'")
+
+fig, ax = plt.subplots()
+all_axis_df[["acc_x", "acc_y", "acc_z"]][:100].plot(ax=ax)
+ax.set_xlabel("Samples")
+ax.set_ylabel("Acceleromete values")
+plt.legend()
+plt.show()
 
 # Create a loop to plot all combinations per sensor
 
