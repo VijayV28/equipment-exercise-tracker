@@ -217,14 +217,52 @@ for column in outlier_columns:
     )
 
 ## Check outliers grouped by label
+label = "squat"
 
+for column in outlier_columns:
+    dataset = mark_outliers_iqr(df[df["label"] == label], column)
+    plot_binary_outliers(
+        dataset=dataset, col=column, outlier_col=column + "_outlier", reset_index=True
+    )
+
+for column in outlier_columns:
+    dataset = mark_outliers_chauvenet(df[df["label"] == label], column)
+    plot_binary_outliers(
+        dataset=dataset, col=column, outlier_col=column + "_outlier", reset_index=True
+    )
+
+dataset, outliers, X_scores = mark_outliers_lof(
+    df[df["label"] == label], outlier_columns
+)
+for column in outlier_columns:
+    plot_binary_outliers(
+        dataset=dataset, col=column, outlier_col="outlier_lof", reset_index=True
+    )
 
 ## Choose method and deal with outliers
 
 # Test on single column
-
+column = "gyr_x"
+dataset = mark_outliers_chauvenet(df, column)
+dataset[dataset["gyr_x_outlier"]]
+dataset.loc[dataset["gyr_x_outlier"], "gyr_x"] = np.nan
+dataset.info()
 
 # Create a loop
+labels = list(df["label"].unique())
 
+outliers_removed_df = df.copy()
+
+for label in labels:
+    for column in outlier_columns:
+        dataset = mark_outliers_chauvenet(df[df["label"] == label], column)
+        dataset.loc[dataset[column + "_outlier"], column] = np.nan
+        outliers_removed_df.loc[
+            outliers_removed_df["label"] == label, column
+        ] = dataset[column]
+        null_number = len(dataset) - len(dataset.dropna())
+        print(f"{null_number} rows removed from {column} for {label}")
+
+outliers_removed_df.info()
 
 ## Export new dataframe
