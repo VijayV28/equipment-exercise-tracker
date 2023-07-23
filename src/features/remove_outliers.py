@@ -266,3 +266,4 @@ for label in labels:
 outliers_removed_df.info()
 
 ## Export new dataframe
+outliers_removed_df.to_pickle("../../data/interim/02_outliers_removed_chauvenet.pkl")
