@@ -115,7 +115,7 @@ acc_df, gyro_df = get_data_from_files(files)
 
 
 # Merging datasets
-data_merged = pd.concat([acc_df.iloc[:, :3], gyro_df])
+data_merged = pd.concat([acc_df.iloc[:, :3], gyro_df], axis=1)
 data_merged.columns = [
     "acc_x",
     "acc_y",
