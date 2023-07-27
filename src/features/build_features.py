@@ -1,33 +1,92 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from DataTransformation import LowPassFilter, PrincipalComponentAnalysis
 from TemporalAbstraction import NumericalAbstraction
 
 # --------------------------------------------------------------
 # Load data
 # --------------------------------------------------------------
+df = pd.read_pickle("../../data/interim/02_outliers_removed_chauvenet.pkl")
+df.info()
+predictor_columns = list(df.columns[:6])
 
+# Plot settings
+mpl.style.use("fivethirtyeight")
+mpl.rcParams["figure.figsize"] = (20, 5)
+mpl.rcParams["figure.dpi"] = 100
+mpl.rcParams["lines.linewidth"] = 2
 
 # --------------------------------------------------------------
 # Dealing with missing values (imputation)
 # --------------------------------------------------------------
 
+df[df["set"] == 20]["gyr_y"].plot()
+# The gaps in the plot represent missing data
+
+for column in predictor_columns:
+    df[column] = df[column].interpolate()
+df.info()  # No missing values
 
 # --------------------------------------------------------------
 # Calculating set duration
 # --------------------------------------------------------------
 
+# Medium represents 10 reps and heavy represents 5 reps
+df[df["set"] == 13]["acc_y"].plot()  # 5 reps (heavy ohp)
+df[df["set"] == 70]["acc_y"].plot()  # 10 reps (medium bench)
+
+duration = df[df["set"] == 1].index[-1] - df[df["set"] == 1].index[0]
+
+sets = list(df.sort_values("set")["set"].unique())
+for set in sets:
+    start = df[df["set"] == set].index[0]
+    end = df[df["set"] == set].index[-1]
+    duration = end - start
+    df.loc[df["set"] == set, "duration"] = duration.seconds
+
+category_duration = df.groupby("category")["duration"].mean()
+category_duration.info()
+
+category_duration["heavy"] / 5
+category_duration["medium"] / 10
 
 # --------------------------------------------------------------
 # Butterworth lowpass filter
 # --------------------------------------------------------------
 
+df_lowpass = df.copy()
+LowPass = LowPassFilter()
+
+# Sample frequency (Number of instances per second(Data in df is sampled by 200 ms))
+fs = 1000 / 200
+# The higher the cutoff the less smoother is the data
+cutoff = 1.3
+
+df_lowpass = LowPass.low_pass_filter(
+    df_lowpass, "acc_y", fs, cutoff, order=5, phase_shift=True
+)
+subset = df_lowpass[df_lowpass["set"] == 90]  # Medium row
+
+fig, ax = plt.subplots(nrows=2, sharex=True, figsize=(20, 10))
+ax[0].plot(subset["acc_y"].reset_index(drop=True), label="Raw Data")
+ax[1].plot(subset["acc_y_lowpass"].reset_index(drop=True), label="Butterworth Filter")
+ax[0].legend(loc="upper center", bbox_to_anchor=(0.5, 1.15), fancybox=True, shadow=True)
+ax[1].legend(loc="upper center", bbox_to_anchor=(0.5, 1.15), fancybox=True, shadow=True)
+
+for column in predictor_columns:
+    df_lowpass = LowPass.low_pass_filter(
+        df_lowpass, column, fs, cutoff, order=5, phase_shift=True
+    )
+    df_lowpass[column] = df_lowpass[column + "_lowpass"]
+    del df_lowpass[column + "_lowpass"]
+
+df_lowpass
 
 # --------------------------------------------------------------
 # Principal component analysis PCA
 # --------------------------------------------------------------
-
 
 # --------------------------------------------------------------
 # Sum of squares attributes
