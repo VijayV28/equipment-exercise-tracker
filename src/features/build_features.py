@@ -88,6 +88,23 @@ df_lowpass
 # Principal component analysis PCA
 # --------------------------------------------------------------
 
+df_pca = df_lowpass.copy()
+PCA = PrincipalComponentAnalysis()
+
+pc_values = PCA.determine_pc_explained_variance(df_pca, predictor_columns)
+plt.figure(figsize=(10, 10))
+plt.plot(range(1, len(pc_values) + 1), pc_values)
+plt.xlabel("Principal Component Numbers")
+plt.ylabel("Explained Variance")
+plt.legend()
+
+df_pca = PCA.apply_pca(df_pca, predictor_columns, 3)
+
+subset = df_pca[df_pca["set"] == 90]
+subset[["pca_1", "pca_2", "pca_3"]].plot()
+
+df.query("category == 'medium'").query("label == 'row'")["set"].unique()
+
 # --------------------------------------------------------------
 # Sum of squares attributes
 # --------------------------------------------------------------
