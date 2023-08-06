@@ -118,6 +118,7 @@ df_squared["gyr_r"] = np.sqrt(gyr_r)
 subset = df_squared[df_squared["set"] == 28]
 subset[["acc_r", "gyr_r"]].plot(subplots=True)
 
+df_squared
 
 # --------------------------------------------------------------
 # Temporal abstraction
