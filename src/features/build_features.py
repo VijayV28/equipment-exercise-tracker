@@ -4,10 +4,12 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from DataTransformation import LowPassFilter, PrincipalComponentAnalysis
 from TemporalAbstraction import NumericalAbstraction
+from FrequencyAbstraction import FourierTransformation
 
 # --------------------------------------------------------------
 # Load data
 # --------------------------------------------------------------
+
 df = pd.read_pickle("../../data/interim/02_outliers_removed_chauvenet.pkl")
 df.info()
 predictor_columns = list(df.columns[:6])
@@ -145,10 +147,47 @@ for set in sets:
 
 df_temporal = pd.concat(df_temporal_list)
 df_temporal.info()
+
+subset[["acc_y", "acc_y_temp_mean_ws_5", "acc_y_temp_std_ws_5"]].plot()
+subset[["gyr_y", "gyr_y_temp_mean_ws_5", "gyr_y_temp_std_ws_5"]].plot()
+
 # --------------------------------------------------------------
-# Frequency features
+# Frequency features (Fourier Transformation)
 # --------------------------------------------------------------
 
+df_freq = df_temporal.copy().reset_index()
+FreqAbs = FourierTransformation()
+
+# Sample Frequency
+fs = int(1000 / 200)
+
+# Window Size (Average time taken for one rep in ms divided by the sampling rate)
+ws = int(2800 / 200)
+
+df_freq = FreqAbs.abstract_frequency(df_freq, ["acc_y"], ws, fs)
+
+subset = df_freq[df_freq["set"] == 15]
+subset[
+    [
+        "acc_y",
+        "acc_y_max_freq",
+        "acc_y_freq_weighted",
+        "acc_y_pse",
+        "acc_y_freq_0.357_Hz_ws_14",
+        "acc_y_freq_0.714_Hz_ws_14",
+    ]
+].plot()
+
+df_freq_list = []
+sets = df.sort_values("set")["set"].unique()
+
+for set in sets:
+    print(f"Applying Fourier Transformation to set {set}")
+    subset = df_freq[df_freq["set"] == set].reset_index(drop=True).copy()
+    subset = FreqAbs.abstract_frequency(subset, predictor_columns, ws, fs)
+    df_freq_list.append(subset)
+
+df_freq = pd.concat(df_freq_list).set_index("epoch (ms)", drop=True)
 
 # --------------------------------------------------------------
 # Dealing with overlapping windows
