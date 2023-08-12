@@ -5,6 +5,7 @@ import matplotlib as mpl
 from DataTransformation import LowPassFilter, PrincipalComponentAnalysis
 from TemporalAbstraction import NumericalAbstraction
 from FrequencyAbstraction import FourierTransformation
+from sklearn.cluster import KMeans
 
 # --------------------------------------------------------------
 # Load data
@@ -193,12 +194,65 @@ df_freq = pd.concat(df_freq_list).set_index("epoch (ms)", drop=True)
 # Dealing with overlapping windows
 # --------------------------------------------------------------
 
+df_freq = df_freq.dropna()
+df_freq = df_freq.iloc[::2]
 
 # --------------------------------------------------------------
 # Clustering
 # --------------------------------------------------------------
 
+df_cluster = df_freq.copy()
+
+cluster_columns = ["acc_x", "acc_y", "acc_z"]
+k_values = range(2, 10)
+inertias = []
+
+for k in k_values:
+    subset = df_cluster[cluster_columns]
+    kmeans = KMeans(n_clusters=k, n_init=20, random_state=42)
+    cluster_labels = kmeans.fit_predict(subset)
+    inertias.append(kmeans.inertia_)
+
+# Elbow method
+plt.figure(figsize=(10, 6))
+plt.plot(k_values, inertias)
+plt.xlabel("k")
+plt.ylabel("Sum of squared distances")
+plt.show()
+
+kmeans = KMeans(n_clusters=5, n_init=20, random_state=42)
+subset = df_cluster[cluster_columns]
+df_cluster["cluster"] = kmeans.fit_predict(subset)
+
+# Plotting clusters
+fig = plt.figure(figsize=(15, 15))
+ax = fig.add_subplot(projection="3d")
+clusters = df_cluster.sort_values("cluster")["cluster"].unique()
+for cluster in clusters:
+    subset = df_cluster[df_cluster["cluster"] == cluster]
+    ax.scatter(subset["acc_x"], subset["acc_y"], subset["acc_z"], label=cluster)
+ax.set_xlabel("X-axis")
+ax.set_ylabel("Y-axis")
+ax.set_zlabel("Z-axis")
+ax.legend()
+plt.show()
+
+# Comparing accelerometer data across labels
+fig = plt.figure(figsize=(15, 15))
+ax = fig.add_subplot(projection="3d")
+labels = df_cluster["label"].unique()
+for label in labels:
+    subset = df_cluster.query(f"label == '{label}'")
+    ax.scatter(subset["acc_x"], subset["acc_y"], subset["acc_z"], label=label)
+ax.set_xlabel("X-axis")
+ax.set_ylabel("Y-axis")
+ax.set_zlabel("Z-axis")
+ax.legend()
+plt.show()
+
 
 # --------------------------------------------------------------
 # Export dataset
 # --------------------------------------------------------------
+
+df_cluster.to_pickle("../../data/interim/03_data_features.pkl")
