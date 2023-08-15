@@ -6,6 +6,7 @@ from LearningAlgorithms import ClassificationAlgorithms
 import seaborn as sns
 import itertools
 from sklearn.metrics import accuracy_score, confusion_matrix
+import matplotlib as mpl
 
 
 # Plot settings
@@ -14,11 +15,27 @@ plt.rcParams["figure.figsize"] = (20, 5)
 plt.rcParams["figure.dpi"] = 100
 plt.rcParams["lines.linewidth"] = 2
 
+df = pd.read_pickle("../../data/interim/03_data_features.pkl")
 
 # --------------------------------------------------------------
 # Create a training and test set
 # --------------------------------------------------------------
 
+df_train = df.drop(columns=["participant", "category", "set"], axis=1)
+
+X = df_train.drop("label", axis=1)
+y = df_train["label"]
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.25, stratify=y, random_state=42
+)
+
+fig, ax = plt.subplots(figsize=(10, 5))
+df_train["label"].value_counts().plot(kind="bar", color="bisque", label="Total", ax=ax)
+y_train.value_counts().plot(kind="bar", color="darkorange", label="Train", ax=ax)
+y_test.value_counts().plot(kind="bar", color="burlywood", label="Test", ax=ax)
+plt.legend()
+plt.show()
 
 # --------------------------------------------------------------
 # Split feature subsets
