@@ -268,12 +268,60 @@ plt.show()
 # Select train and test data based on participant
 # --------------------------------------------------------------
 
+participant_df = df.drop(columns=["category", "set"], axis=1)
+
+X_train = participant_df[participant_df["participant"] != "A"].drop("label", axis=1)
+y_train = participant_df[participant_df["participant"] != "A"]["label"]
+
+X_test = participant_df[participant_df["participant"] == "A"].drop("label", axis=1)
+y_test = participant_df[participant_df["participant"] == "A"]["label"]
+
+X_train = X_train.drop("participant", axis=1)
+X_test = X_test.drop("participant", axis=1)
+
+fig, ax = plt.subplots(figsize=(10, 5))
+df_train["label"].value_counts().plot(kind="bar", color="bisque", label="Total", ax=ax)
+y_train.value_counts().plot(kind="bar", color="darkorange", label="Train", ax=ax)
+y_test.value_counts().plot(kind="bar", color="burlywood", label="Test", ax=ax)
+plt.legend()
+plt.show()
 
 # --------------------------------------------------------------
 # Use best model again and evaluate results
 # --------------------------------------------------------------
 
+(
+    class_train_y,
+    class_test_y,
+    class_train_prob_y,
+    class_test_prob_y,
+) = learner.random_forest(
+    X_train[feature_set_4], y_train, X_test[feature_set_4], gridsearch=True
+)
+
+accuracy = accuracy_score(y_test, class_test_y)
+classes = y_test.unique()
+
+cm = confusion_matrix(y_true=y_test, y_pred=class_test_y, labels=classes)
+fig, ax = plot_confusion_matrix(conf_mat=cm, class_names=classes, colorbar=True)
+plt.show()
 
 # --------------------------------------------------------------
-# Try a simpler model with the selected features
+# Trying a complex model with the selected features
 # --------------------------------------------------------------
+
+(
+    class_train_y,
+    class_test_y,
+    class_train_prob_y,
+    class_test_prob_y,
+) = learner.feedforward_neural_network(
+    X_train[feature_set_4], y_train, X_test[feature_set_4], gridsearch=False
+)
+
+accuracy = accuracy_score(y_test, class_test_y)
+classes = y_test.unique()
+
+cm = confusion_matrix(y_true=y_test, y_pred=class_test_y, labels=classes)
+fig, ax = plot_confusion_matrix(conf_mat=cm, class_names=classes, colorbar=True)
+plt.show()
