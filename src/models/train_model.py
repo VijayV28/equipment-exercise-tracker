@@ -7,6 +7,7 @@ import seaborn as sns
 import itertools
 from sklearn.metrics import accuracy_score, confusion_matrix
 import matplotlib as mpl
+from mlxtend.plotting import plot_confusion_matrix
 
 
 # Plot settings
@@ -256,6 +257,12 @@ plt.show()
     X_train[feature_set_4], y_train, X_test[feature_set_4], gridsearch=True
 )
 
+accuracy = accuracy_score(y_test, class_test_y)
+classes = y_test.unique()
+
+cm = confusion_matrix(y_true=y_test, y_pred=class_test_y, labels=classes)
+fig, ax = plot_confusion_matrix(conf_mat=cm, class_names=classes, colorbar=True)
+plt.show()
 
 # --------------------------------------------------------------
 # Select train and test data based on participant
