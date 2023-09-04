@@ -1,5 +1,4 @@
 # Equipment Exercise Tracker 🏋🏽💪🏻
----
 
 This repository contains all the code to count the repetitions of a series of exercises performed during gym workouts involving barbells. 
 
